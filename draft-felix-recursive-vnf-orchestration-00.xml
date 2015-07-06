@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+]>
+<?xml-stylesheet type="text/xsl" href="rfc2629.xslt" ?>
+<!-- used by XSLT processors -->
+<!-- OPTIONS, known as processing instructions (PIs) go here. -->
+<!-- For a complete list and description of PIs,
+please see http://xml.resource.org/authoring/README.html. -->
+<!-- Below are generally applicable PIs that most I-Ds might want to use. -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC): -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="2"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references: -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space: 
+(using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- keep one blank line between list items -->
+<!-- end of popular PIs -->
+<rfc category="info" docName="draft-felix-recursive-vnf-orchestration-00" ipr="trust200902">
+	<front>
+		<title abbrev="Recursive orchestration">Recursive orchestration of federated virtual network functions</title>
+		<author fullname="Gino Carrozzo (Ed.)" initials="G.Carrozzo" surname="Carrozzo" role="editor">
+			<organization>Nextworks srl</organization>
+			<address>
+				<postal>
+					<street>via Livornese 1027</street>
+					<city>Pisa</city>
+					<!-- <region/> -->
+					<code>56122</code>
+					<country>Italy</country>
+				</postal>
+				<!--  <phone/> -->
+				<!-- <facsimile/> -->
+				<email>g.carrozzo@nextworks.it</email>
+				<!-- <uri/> -->
+			</address>
+		</author>
+		<author fullname="Kostas Pentikousis (Ed.)" initials="K. Pentikousis" surname="Pentikousis" role="editor">
+			<organization>EICT</organization>
+			<address>
+				<postal>
+					<street>Torgauer Strasse 12-15</street>
+					<city>Berlin</city>
+					<!-- <region/> -->
+					<code>10829</code>
+					<country>Germany</country>
+				</postal>
+				<!--  <phone/> -->
+				<!-- <facsimile/> -->
+				<email>k.pentikousis@eict.de</email>
+				<!-- <uri/> -->
+			</address>
+		</author>
+		<!-- 		<author fullname="" initials="" surname="">
+			<organization></organization>
+			<address>
+			<postal>
+			<street></street>
+			<city></city>
+			<region/>
+			<code></code>
+			<country></country>
+			</postal>
+			<phone/>
+			<facsimile/>
+			<email></email>
+			<uri/>
+			</address>
+		</author> -->
+		<date month="July" year="2015"/>
+		<!-- <area/> -->
+		<workgroup>Internet Research Task Force NFVRG </workgroup>
+		<keyword>Resource orchestration</keyword>
+		<keyword>Resource federation</keyword>
+		<keyword>Recursive orchestration</keyword>
+		<!-- <keyword/> -->
+		<abstract>
+			<t>
+				This document introduces a policy-based resource management and orchestration
+				framework which aims at contributing towards the current namesake NFVRG near-term 
+				work items. 
+			</t>
+			<t>
+				It describes key points of the recursive resource orchestration framework developed 
+				within the wider research area of federated	virtual network function orchestration. 
+				The document also relates this effort with respect to other orchestration frameworks, 
+				thus addressing both the NFV research and practitioner communities.
+			</t>
+		</abstract>
+	</front>
+	<middle>
+		<section title="Introduction">
+			<t>
+				Programmable networks, based on Software-Defined Networking (SDN)
+				principles, decouple the control from the data plane and allow 
+				for remote software to take over the control and management of 
+				the underlying network. Those networks have become a substantial
+				part of existing R&amp;D on Future Internet (FI) in Europe and 
+				worldwide. Both academic and industrial SDN researchers around 
+				the world are largely relying on large scale testbed infrastructures 
+				to validate their proof-of-concept prototypes and experiment 
+				with new algorithms, protocols or network functions in large-scale,
+				efficient, predictable, realistic environments.
+				Those FI testbeds differ in the resources provided as well as in 
+				the geographic scope on which they operate - for instance at 
+				inter-continental level. With the aim of promoting the use of 
+				heterogeneous resources across different infrastructures, FI 
+				testbeds usually provide the experimenter with common interfaces 
+				and workflows. This is commonly referred as federation and is a 
+				way of abstracting the different internal infrastructures, 
+				resources and procedures to allow defining larger experiments 
+				where different resources are combined and handled the same way. 
+				However, federation in open, heterogeneous testbeds is not a 
+				trivial task. By designing a suitable architecture and a framework, 
+				the FELIX [1] project aims to facilitate the federation and integration 
+				of different network and computing resources residing in a 
+				multi-domain heterogeneous environment across different continents. 
+				To achieve this, the FELIX architecture builds on and advances others 
+				assets previously developed in other FI projects (e.g. OFELIA) and 
+				some of its components realise the federation concepts defined in 
+				SFA [2] and implemented by GENI [3]. In particular, FELIX uses a 
+				combination of recursive and hierarchical configurations for 
+				orchestration, request delegation and inter-domain dependency 
+				management; with resource orchestrating entities responsible for 
+				the synchronization of resources available in particular
+				administrative domains. These and other key building blocks of the 
+				FELIX architecture are introduced in the following sections.
+			</t>
+			<t>
+				This document is being discussed on the nfvrg@irtf.org mailing list.
+			</t>
+		</section>
+		<section title="Contributors">
+			<t>
+				Other contributors to this document are:
+			</t>
+			<t>
+				<list style="symbols">
+					<t> B. Belter (PSNC, Poland) </t>
+					<t> T. Kudoh (Univ. Tokyo/AIST, Japan) </t>
+					<t> J. Tanaka (KDDI, Japan) </t>
+					<t> C. Bermudo (I2CAT, Spain) </t>
+					<t> B. Vermeulen(iMinds, Belgium) </t>
+				</list>
+			</t>
+		</section>
+		<section title="Conventions used in this document">
+			<t>
+				The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", 
+				"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+				document are to be interpreted as described in <xref target="RFC2119"/>.
+			</t>
+		</section>
+		<section title="Terminology">
+			<t>
+				The following terminology is used in this document.
+			</t>
+			<t>
+				<list style="hanging">
+					<t hangText="Virtual Network Function(VNF).">
+						One or more virtual machines running different software and processes, on top of 
+						industry standard high volume servers, switches and storage, or even cloud computing
+						infrastructure, and capable of implementing network functions traditionally 
+						implemented via custom hardware appliances and middleboxes (e.g. router, NAT, FW, 
+						LB, etc.)
+					</t>
+					<t hangText="VNF Island.">
+						A set of virtualized network functions and related network and IT resources under 
+						the same administrative ownership/control. A VNF island could consist of multiple 
+						zones, each characterized by a specific set of control tools &amp; interfaces.
+					</t>
+					<t hangText="VNF Zone.">
+						A set of virtual network functions grouped for homogeneity of technologies and/or 
+						control tools and/or interfaces (e.g. L2 switching zone, optical switching zone, 
+						OF protocol controlled zone, other transit domain zone with a control interface). 
+						The major goal of defining SDN zones is to implement appropriate policies for the 
+						increasing availability, scalability and control of the different resources of the 
+						island. Examples of zone definitions are available in popular Cloud Management Systems 
+						(CMS) like Cloudstack (e.g. refer to the Cloudstack Infrastructure partitioning into 
+						regions, zones, pods, etc., [3]) and OpenStack (e.g. refer to the infrastructure 
+						partitioning in availability zones and host aggregates [4]).
+					</t>
+					<t hangText="Transit network domains.">
+						The network domains use the Network Service Interface to expose automatically and 
+						on-demand control of the connectivity services and, optionally, inter-domain 
+						topology exchange. In order to federate resources belonging to distant experimental 
+						facilities it must be ensured that interconnectivity is provided on-demand and with 
+						a specific granularity. In FELIX, it is assumed that all experimental facilities will 
+						be interconnected with networks running NSI-compatible network controllers. 
+						The NSIv2.0 standard interface will be used as a means to orchestrate network 
+						resources for an experiment setup.
+					</t>
+					<t hangText="Slice.">
+						A user-defined subset of virtual networking and IT resources, created from the physical 
+						resources available in federated SDN Zones and SDN Islands. An SDN Slice has the basic 
+						property of being isolated from other slices defined over the same physical resources, 
+						and being dynamically extensible across multiple SDN Islands. Each SDN Slice instantiates 
+						the specific set of control tools of the specific zones it traverses.
+					</t>
+					<t hangText="Resource Orchestrator (RO)."> Teh entity responsible for orchestrating 
+						the end-to-end network service and resources reservation in terms of compute, storage 
+						and network functions over the infrastructure, as well as delegating end-to-end 
+						resource and service provisioning in a technology-agnostic way
+					</t>
+					<t hangText="Resource Managers (RMs)."> the entity responsible for controlling and 
+						managing different types of resources and/or network functions
+					</t>
+				</list>
+			</t>
+		</section>
+		<section title="Recursive orchestration in federated virtual environments">
+			<section title="Problem Statement">
+				<t>	
+					XXXXX - the multi-administrative domain problem rationale for 
+					federation of resource
+					applicability of this framework to experimentation (FELIX base)
+					or in commercial environments
+				</t>
+
+				<figure title="Recursive Orchestration architecture model" 
+						align="center" anchor="fig-mro">
+					<preamble></preamble>
+					<artwork>
+						<![CDATA[ 				
++---+                 +-------------------------------------------+      +---+
+|   |                 |          RESOURCE ORCHESTRATOR            |      |   |
+|   |-----------------|                (parent)                   |------|   |
+|   |                 +-------------------------------------------+      |   |
+|   |                           |                          |             |   |
+|   |                           |                          |             |   |
+|   |  +-------------------------------------+  +---------------------+  |   |
+| M |  |        RESOURCE ORCHESTRATOR        |  |RESOURCE ORCHESTRATOR|  |   |
+| O |--|               (child)               |  |       (child)       |--|   |
+| N |  +-------------------------------------+  +---------------------+  | A |
+| I |        |             |            |                  |             | A |
+| T |        |             |            |                  |             | A |
+| O |  +-----------+ +----------+ +----------+       +-----------+       |   |
+| R |  |  VF POOL  | | VNF POOL | | VNF POOL |       |  Virtual  |       |   |
+| I |--|  MANAGER  | | MANAGER  | | MANAGER  |       |    pool   |-------|   |
+| N |  |(computing)| |(LAN side)| |(WAN side)|       | manager(s)|       |   |
+| G |  +-----------+ +----------+ +----------+       +-----------+       |   |
+|   |        |             |             |                 |             |   |
+|   |  +----------+  +----------+ ----------+         +----------+       |   |
+|   |--|    VF    |  |    VNF   | |    VNF   |        |    VNF   |-------|   |
++---+  +----------+  +----------+ +----------+        +----------+       +---+
+]]>
+					</artwork>
+					<postamble></postamble>
+				</figure>
+
+
+			</section>
+
+			<section title="Resource Orchestrator">
+				<t>	
+					XXXXX - RO description and deployment models&gt;
+				</t>
+				<figure title="RO deployment models" 
+						align="center" anchor="fig-ro-deploy">
+					<preamble></preamble>
+					<artwork>
+						<![CDATA[ 		
+
+           +-----------+
+           |     RO    |
+           +-----------+
+           /     |    \                 +------+   +------+   +------+
+          /      |     \                |  RO  |---|   RO |---|  RO  |
+         /       |      \               +------+   +------+   +------+
+  +------+   +------+   +------+
+  |  RO  |   |  RO  |   |  RO  |
+  +------+   +------+   +------+
+              (A)                                     (B)
+
+
+               +--------------------+
+               |                    |
+           +------+   +------+   +------+   +------+
+           |  RO  |---|  RO  |---|  RO  |---|  RO  |
+           +------+   +------+   +------+   +------+
+               |         |                    |  |
+               |         +--------------------+  |
+               +---------------------------------+
+                              (C)
+
+
+]]>
+					</artwork>
+					<postamble></postamble>
+				</figure>
+
+				<figure title="Hybrid RO deployment model" 
+						align="center" anchor="fig-ro-hybrid">
+					<preamble></preamble>
+					<artwork>
+						<![CDATA[ 		
+
+             +-----------+                      +-----------+
+             |     RO    +----------------------+     RO    |
+             +-----------+                      +-----------+
+             /     |    \                       /     |    \
+            /      |     \                     /      |     \
+           /       |      \                   /       |      \
+    +------+   +------+   +------+     +------+   +------+   +------+
+    |  RO  |   |  RO  |   |  RO  |     |  RO  |   |  RO  |   |  RO  |
+    +------+   +------+   +------+     +------+   +------+   +------+
+]]>
+					</artwork>
+					<postamble></postamble>
+				</figure>
+
+
+				</section>
+		</section>
+		<section title="Policy-Based Resource Management">
+			<t>	
+				XXXXX - how the FELIX arch works, the spaces and AA/C-BAS aspects&gt;
+			</t>
+			<section title="Certificate-based authN/authZ (C-BAS)">
+				<t>	
+					XXXXX - 
+				</t>
+			</section>
+			<section title="Resource Managers">
+				<section title="Generic RM functionality">
+					<t>	
+						XXXXX - The AM concept, a choice on northbound and 
+						southbound interfaces
+					</t>
+				</section>
+				<section title="Stitching Entity VNF">
+					<t>	
+						XXXXX - SERM  dataplane
+					</t>
+				</section>
+				<section title="OpenFlow-based switching VNF">
+					<t>	
+						XXXXX - SDN-RM and OF switches
+					</t>
+				</section>
+				<section title="RM for virtual computing">
+					<t>	
+						XXXXX -  C-RM and why NFV has to look beyond Network&gt;
+					</t>
+				</section>
+			</section>
+		</section>
+		<section title="Positioning w.r.t. existing Orchestration  Frameworks">
+			<section title="Openstack orchestration">
+				<t>
+					The mission of the OpenStack Orchestration program is to create a human- and 
+					machine-accessible service for managing the entire lifecycle of infrastructure and 
+					applications within OpenStack clouds.
+					Heat is the main project in the OpenStack Orchestration program. It implements an 
+					orchestration engine to launch multiple composite cloud applications based on templates 
+					in the form of text files that can be treated like code. A native Heat template format 
+					is evolving, but Heat also endeavours to provide compatibility with the AWS CloudFormation 
+					template format, so that many existing CloudFormation templates can be launched on 
+					OpenStack. Heat provides both an OpenStack-native ReST API and a CloudFormation-compatible
+					Query API.
+					A Heat template describes the infrastructure for a cloud application in a text file that
+					is readable and writable by humans, and can be checked into version control, diffed, etc.
+					Infrastructure resources that can be described include: servers, floating ips, volumes, 
+					security groups, users, etc.
+					Heat also provides an autoscaling service that integrates with Ceilometer, so you can 
+					include a scaling group as a resource in a template.
+					Templates can also specify the relationships between resources (e.g. this volume is 
+					connected to this server). This enables Heat to call out to the OpenStack APIs to create 
+					all of your infrastructure in the correct order to completely launch your application.
+					Heat manages the whole lifecycle of the application - when you need to change your 
+					infrastructure, simply modify the template and use it to update your existing stack. 
+					Heat knows how to make the necessary changes. It will delete all of the resources when 
+					you are finished with the application, too.
+					Heat primarily manages infrastructure, but the templates integrate well with software 
+					configuration management tools such as Puppet and Chef. The Heat team is working on 
+					providing even better integration between infrastructure and software.
+
+				</t>
+			</section>
+			<section title="OpenMANO">
+				<t>
+					OpenMANO is an open source project that provides a practical implementation of the 
+					reference architecture for Management &amp; Orchestration under standardization at 
+					ETSI&apos;s NFV ISG (NFV MANO). It consists of three main SW components:
+				</t>
+				<t>
+					openvim: reference implementation of an NFV VIM (Virtualised Infrastructure Manager). It interfaces 
+					with the compute nodes in the NFV Infrastructure and an openflow controller in order to provide 
+					computing and networking capabilities and to deploy virtual machines. It offers a northbound interface,
+					based on REST (openvim API), where enhanced cloud services are offered including the creation, 
+					deletion and management of images, flavours, instances and networks. The implementation follows the 
+					recommendations in NFV-PER001.
+				</t>
+				<t>
+					openmano: reference implementation of an NFV-O (Network Functions Virtualisation Orchestrator). 
+					It interfaces with an NFV VIM through its API and offers a northbound interface, based on REST 
+					(openmano API), where NFV services are offered including the creation and deletion of VNF templates,
+					VNF instances, network service templates and network service instances.
+				</t>
+				<t>
+					openmano-gui: web GUI to interact with openmano server, through its northbound API, in a friendly way.
+				</t>
+			</section>
+			<section title="Other orchestration approaches: federated SDN infrastructures for research experimentation">
+				<t>	
+					The FELIX project [1] is part of this international research experimentation 
+					infrastructure strategy (in Europe under the Future Internet Research Experimentation
+					- FIRE - framework), with a special focus on SDN and Network Service Interface 
+					(NSI) developed by the Open Grid Forum. FELIX aims at facilitating the federation 
+					and integration of different network and computing resources controlled via SDN 
+					and NSI in a multi-domain heterogeneous environment across, initially spanning 
+					Europe and Japan. To achieve this, the FELIX consortium has designed and is 
+					implementing an architecture that extends and advances assets previously 
+					developed in other Future Internet projects (e.g. OFELIA), by realizing the 
+					federation concepts defined in SFA [2] and implemented by GENI [3] with a 
+					combination of recursive and hierarchical configurations for orchestration, 
+					request delegation and inter-domain dependency management. Resource orchestrating 
+					entities are responsible in FELIX for the synchronization of resources available 
+					in particular administrative domains. 
+					A number of research testbeds have been built over the past year to stimulate 
+					Future Internet research. Three of them are particularly relevant on the SDN area:
+					OFELIA, FIBRE and GridARS.
+					The OFELIA project [12] established a pan-European experimental network facility
+					which enables researchers to experiment with real OpenFlow-enabled network 
+					equipment and to control and extend the network itself in a precise and dynamic 
+					fashion. The OFELIA facility uses the OpenFlow protocol (and related tools) to 
+					support virtualization and control of the network environment through secure and 
+					standardised interfaces. Ten interconnected sites form a diverse OpenFlow-based
+					infrastructure that allows experimentation on multi-layer and multi-technology 
+					networks. A key objective is to provide experimental facilities which allow for 
+					the flexible integration of test and production traffic by isolating the corresponding
+					traffic domains inside the OpenFlow-enabled network equipment. This creates
+					realistic test scenarios and facilitates the seamless deployment of successfully 
+					tested technology into the real-world. OFELIA consists of two layers. The physical 
+					layer is comprised of the computing resources (servers, processors) and network 
+					resources (routers, switches, links, wireless devices and optical components). 
+					Resources are managed by the OFELIA Control Framework (OCF). Furthermore, the 
+					control framework layer contains components which manage and monitor the 
+					applications and devices in the physical layer. Aggregate Managers and Resource 
+					Managers are crucial components of this layer, which can be seen as the combination 
+					of three components: Expedient is the GUI and allows the connection and federation
+					with different Aggregate Managers via its plugins; Aggregate Managers (AMs) enable
+					experimenters to create both compute and network resources via the VT AM and OF 
+					AM respectively; Resource Managers directly interact with the physical layer,
+					provisioning compute resources (OFELIA Xen Agent) or flow rules to establish the
+					topology (FlowVisor). 
+					The FIBRE project [13] federates testbeds distributed across Europe and Brazil. 
+					The FIBRE-EU system builds on top of the OFELIA OCF and incorporates several 
+					wireless nodes based on commercial Wi-Fi cards and Linux open source drivers. 
+					On the other hand, the FIBRE-BR testbed includes nine Brazilian partners 
+					interconnected using private L2 channels. The VLANbased L2 physical link between 
+					Europe and Brazil is provided by GEANT, Internet2 and RedCLARA. Unlike OFELIA, 
+					the FIBRE infrastructure is managed by different types of control and monitoring 
+					frameworks (CMFs). Indeed, FIBRE includes and enhances testbeds from other projects 
+					like OFELIA, OMF and ProtoGENI, which have been modified with the necessary software
+					components to align their northbound interface to a common specification. The FIBRE
+					project has opted to have two top-domain authorities, one in Brazil and one in Europe,
+					to manage and own resources in the respective continents. These inter-connected 
+					authorities interoperate to allow the federation of BR and EU testbeds. The FIBRE 
+					architecture is composed of several multi-layer building blocks which are briefly 
+					summarized next. The SFA Registry is a database able to store the information related 
+					to users and projects, and to manage the certificates provided by the authorities. 
+					The MySLICE tool is used as the graphical (web) user interface for administration and 
+					experiment management. The SFA gateway is designed to translate user's requests 
+					to a common API and provide slice management functions. FIBRE reuses and enhances 
+					the Aggregate Managers (AM) previously developed in OFELIA related to OpenFlow (OPTIN AM)
+					and Xen-based (VT AM) resources and introduces a new AM to manage optical switches 
+					(ROADM) devices. 
+					In Japan, GridARS [15] provides a reference implementation of the Open Grid Forum 
+					(OGF) Network Services Interfaces Connection Service (NSI-CS) protocol standard [4].
+					NSI is a web service-based interface for reserving, provisioning, releasing and 
+					terminating a network service, such as an end-to-end connection, via a two-phase
+					commit protocol. GridARS can coordinate multiple resources (services), such as a
+					network connection, virtual machines and storage spaces, via the NSICS protocol.
+					It provides experimenters a virtual infrastructure, which spans several cloud 
+					resources, realised by multiple management domains including commercial solutions. 
+					GridARS consists of three main components. First, the Resource Management Service 
+					(RMS) is based on NSI-CS and consists of Global Resource Coordinators (GRCs) and
+					Resource Managers (RMs) for Computers (CRM), Networks (NRM), and Storage (SRM).
+					Coordinating with GRCs and RMs, RMS can coordinate heterogeneous virtual resources
+					on multiple cloud environments. GRC has a co-allocation planning capability, which 
+					determines a suitable resource allocation plan. Second, the Distributed Monitoring
+					Service (DMS) allows experimenters to monitor the virtual environment allocated 
+					to them. DMS does not have a central database, but gathers distributed monitoring 
+					information, tracking the hierarchical RMS reservation tree using the reservation
+					ID, automatically. DMS consists of Aggregators (DMS/A) and Collectors (DMS/C).
+					Each DMS/A gathers monitoring information from related DMS/As or DMS/Cs distributed
+					over multiple domains, and provides the information to the requester. Each DMS/C
+					monitors the reserved resources periodically, filters the monitoring information 
+					according to the domain policy, and provides the requester with the authorized 
+					information. Finally, the Resource Discovery Service (RDS) collects static resource 
+					information items from each resource domain and provides the aggregated information.
+					The RDS implementation is based on the Catalog Service Web (CSW), defined by Open 
+					Geospatial Consortium (OGC) as an online XML-based database. Each resource domain
+					can POST its static resource information, such as network topology, number of VMs, 
+					and storage spaces. 
+					This brief review of research experimentation infrastructures with SDN control 
+					tools indicates that either they have been based on the OCF or on NSI framework 
+					but never together, thus limiting the flexibility of testbed interconnections at 
+					geographical scale. 
+					The joint EU-Japan collaboration project FELIX aims to bridge this gap and develop
+					for the first time a testbed federation that successfully spans across these 
+					technological and geographical boundaries and incorporates both approaches in a 
+					recursive and scalable model.
+				</t>
+			</section>
+		</section>
+		<section anchor="Acknowledgements" title="Acknowledgements">
+			<t>
+				This work has been partially supported and funded by the European Commission through 
+				the  FP7 ICT FELIX project (Federated Testbeds for Large Scale Infrastructure Experiments,
+				grant agreement no. 608638) and the National Institute of Information and 
+				Communications Technology (NICT) in Japan.
+				The views expressed here are those of the author only.  The European Commission and 
+				NICT are not liable for any use that may be made of the information in this document.
+			</t>
+		</section>
+		<section anchor="IANA" title="IANA Considerations">
+			<t>	
+				No IANA considerations are applicable. 
+			</t>
+		</section>
+		<section anchor="Security" title="Security Considerations">
+			<t>
+				This document proposes a new architecture for resource and VNF orchestration 
+				for the design of which security features are of utmost importance to proceed to 
+				operational deployments.  
+				Frameworks for Security in SDN are applicable to this document and are discussed in 
+				literature, 
+				for example, in <xref target="SDNSecurity"/>,  <xref target="SDNSecServ"/> and
+				<xref target="SDNSecOF"/>.
+				Security considerations regarding specific protocol interfaces are TBD.
+			</t>
+		</section>
+	</middle>
+
+	<back>
+		<references title="Normative References">
+			&RFC2119;
+		</references>
+		<references title="Informative References">
+			<reference anchor="SDNSecOF">
+				<front>
+					<title abbrev="SDNSecOF">
+						OpenFlow: A Security Analysis
+					</title>
+					<author surname="Kloti, R., Kotronis, V., and P. Smith"/>
+					<date year="2013" month="October"/>
+				</front>
+				<seriesInfo name="21st IEEE International Conference on Network Protocols (ICNP)" value="pp. 1-6"/>
+			</reference>
+			<reference anchor="SDNSecServ">
+				<front>
+					<title abbrev="SDNSecServ">
+						SDN Security: A Survey
+					</title>
+					<author surname="Scott-Hayward, S., O'Callaghan, G., and S. Sezer"/>
+					<date year="2013" month=""/>
+				</front>
+				<seriesInfo name="IEEE SDN for Future Networks and Services (SDN4FNS)" value="pp. 1-7"/>
+			</reference>
+			<reference anchor="SDNSecurity">
+				<front>
+					<title abbrev="SDNSecurity">
+						Towards Secure and Dependable Software-Defined Networks
+					</title>
+					<author surname="Kreutz, D., Ramos, F., and P. Verissimo"/>
+					<date year="2013" month=""/>
+				</front>
+				<seriesInfo name="Proceedings of the second ACM SIGCOMM workshop on Hot Topics in Software Defined Networking" value="pp. 55-60"/>
+			</reference>
+			<reference anchor="FELIX">
+				<front>
+					<title abbrev="FELIX">
+						FELIX Project website   
+					</title>
+					<author surname=""/>
+					<date year=""/>
+				</front>
+				<seriesInfo name="" value="http://www.ict-felix.eu"/>
+			</reference>
+			<reference anchor="SFA">
+				<front>
+					<title abbrev="SFA">
+						Slice-based Federation Architecture (SFA) v2.0   
+					</title>
+					<author surname="L. Peterson, R. Ricci, A. Falk and J. Chase"/>
+					<date year="2010" month="July"/>
+				</front>
+				<seriesInfo name="" value=""/>
+			</reference>
+			<reference anchor="FELIX-D2.1">
+				<front>
+					<title abbrev="FELIX-D2.1">
+						FELIX Deliverable D2.1 - Experiment Use Cases and Requirements   
+					</title>
+					<author surname="R. Krzywania, W. Bogacki, B. Belter, K. Pentikousis, T. Rothe, G. Carrozzo, N. Ciulli, C. Bermudo, T. Kudoh, A. Takefusa, J. Tanaka and B. Puype"/>
+					<date year="2013" month="September"/>
+				</front>
+				<seriesInfo name="" value="Available at http://www.ict-felix.eu."/>
+			</reference>
+			<reference anchor="FELIX-D2.2">
+				<front>
+					<title abbrev="FELIX-D2.2">
+						FELIX Deliverable D2.2 - General Architecture and Functional Blocks   
+					</title>
+					<author surname="R. Krzywania, W. Bogacki, B. Belter, K. Pentikousis, T. Rothe, M. Broadbent, G. Carrozzo, N. Ciulli, R. Monno, C. Bermudo, A. Vico, C. Fernandez, T. Kudoh, A. Takefusa, J. Tanaka and B. Puype"/>
+					<date year="2014" month="February"/>
+				</front>
+				<seriesInfo name="" value="Available at http://www.ict-felix.eu."/>
+			</reference>
+		</references>
+	</back>
+</rfc>
