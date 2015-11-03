@@ -1,0 +1,1736 @@
+
+
+
+
+Internet Research Task Force NFVRG                      G. Carrozzo, Ed.
+Internet-Draft                                                 Nextworks
+Intended status: Informational                                  R. Szabo
+Expires: April 12, 2016                                         Ericsson
+                                                     K. Pentikousis, Ed.
+                                                                    EICT
+                                                        October 10, 2015
+
+
+  Challenges for Recursive orchestration of federated virtual network
+                               functions
+        draft-caszpe-nfvrg-recursive-orchestration-challenges-00
+
+Abstract
+
+   The introduction of network and service functionality virtualization
+   in carrier-grade networks promises improved operations in terms of
+   flexibility, efficiency, and manageability.  In current practice,
+   virtualization is controlled through orchestrator entities that
+   expose programmable interfaces according to the underlying resource
+   types.  Typically this means the adoption of, on the one hand,
+   established data center compute/storage and, on the other, network
+   control APIs which were originally developed in isolation.  Arguably,
+   the possibility for innovation highly depends on capabilities and
+   openness of the aforementioned interfaces.
+
+   This document introduces a policy-based resource management and
+   orchestration framework which motivates the need for a high level of
+   programmability beyond policy and service descriptions.
+
+   Here we summarize the challenges related to orchestration programming
+   in this unified cloud and carrier network production environment, and
+   describe key points of the recursive resource orchestration framework
+   developed within the wider research area of federated virtual network
+   function orchestration.  The document also relates this effort with
+   respect to other orchestration frameworks, thus addressing both the
+   NFV research and practitioner communities.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 1]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on April 12, 2016.
+
+Copyright Notice
+
+   Copyright (c) 2015 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   3.  Motivations . . . . . . . . . . . . . . . . . . . . . . . . .   7
+   4.  Recursive orchestration in federated virtual environments . .   9
+     4.1.  Problem Statement . . . . . . . . . . . . . . . . . . . .   9
+     4.2.  Resource Orchestrator . . . . . . . . . . . . . . . . . .  12
+   5.  Policy-Based Resource Management Framework  . . . . . . . . .  15
+     5.1.  Certificate-based authN/authZ (C-BAS) . . . . . . . . . .  17
+     5.2.  Resource Managers . . . . . . . . . . . . . . . . . . . .  18
+   6.  Challenges  . . . . . . . . . . . . . . . . . . . . . . . . .  21
+     6.1.  Orchestration . . . . . . . . . . . . . . . . . . . . . .  21
+     6.2.  Resource description  . . . . . . . . . . . . . . . . . .  21
+     6.3.  Dependencies (de-composition) . . . . . . . . . . . . . .  22
+     6.4.  Elastic VNF . . . . . . . . . . . . . . . . . . . . . . .  22
+     6.5.  Measurement and analytics . . . . . . . . . . . . . . . .  23
+   7.  Positioning w.r.t. existing Orchestration  Frameworks . . . .  24
+     7.1.  Openstack orchestration . . . . . . . . . . . . . . . . .  24
+     7.2.  OpenMANO  . . . . . . . . . . . . . . . . . . . . . . . .  24
+     7.3.  Other orchestration approaches: federated SDN
+           infrastructures for research experimentation  . . . . . .  25
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  26
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  26
+   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  26
+   11. Contributors  . . . . . . . . . . . . . . . . . . . . . . . .  27
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 2]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   12. Informative References  . . . . . . . . . . . . . . . . . . .  27
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  31
+
+1.  Introduction
+
+   Today's Internet is a concatenation of IP networks interconnected by
+   many distributed functions integrated into a plethora of highly
+   specialized middleboxes.  These elements implement complex network
+   functions like firewalls, NATs, DPI, traffic scrubbing, etc.  The
+   product is a quite complex and rigid internetworking system in which
+   network administrators and users cannot easily determine what is
+   happening to traffic flows as they go toward destinations.  In the
+   last decade networks, servers, storage technologies, and applications
+   have all undergone significant changes with the introduction of
+   virtualization, network overlays, and orchestration.  Such
+   technologies have allowed network operators and service providers to
+   easily introduce a variety of (proprietary) hardware-based appliances
+   in order to improve their network manageability as well as rapidly
+   launch new services, keeping up with the pace of their users demand.
+   Therefore, the current Internet looks like a concatenation of
+   networks with many distributed functions, implemented via a plethora
+   of highly specialized middleboxes which implement firewalls, DPI,
+   NAT, traffic scrubbing, etc.  [middlebox].
+
+   To a large degree there is agreement in the network research,
+   practitioner, and standardization communities that rigid network
+   control limits the flexibility and manageability of service creation,
+   as discussed in [NSC] and the references therein.  For instance, it
+   is not unusual that today an average service creation time cycle
+   exceeds 90 hours, whereas times in the order of minutes
+   [EU-5GPPP-Contract] if not seconds would be expected given the recent
+   advances in virtualization and cloudification.
+
+   Software Define Networking and programmable virtualized network
+   functions for flow processing are further contributing to the rapid
+   change of the current scenario, extending the support of network
+   functions by virtualized and chained appliances beyond the virtual L2
+   switching over IP networks (e.g.  VXLAN, GRENV, STT) and the basic
+   LAN based flow pinpointing.
+
+   Flexible service definition and creation start by formalizing the
+   service into the concept of network function forwarding graphs, such
+   as the ETSI VNF Forwarding Graph [ETSI-NFV-Arch] or the ongoing work
+   in IETF [I-D.ietf-sfc-problem-statement].  These graphs represent the
+   way in which service end-points (e.g., customer access) are
+   interconnected with a set of selected network functionalities such as
+   firewalls, load balancers, and so on, to deliver a network service.
+   Service graph representations form the input for the management and
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 3]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   orchestration to instantiate and configure the requested service.
+   For example, ETSI defined a Management and Orchestration (MANO)
+   framework in [ETSI-NFV-MANO].  We note that throughout such a
+   management and orchestration framework different abstractions may
+   appear for separation of concerns, roles or functionality, or for
+   information hiding.
+
+   Compute virtualization is central to the concept of Network Function
+   Virtualization (NFV).  However, carrier-grade services demand that
+   all components of the data path, such as Network Functions (NFs),
+   virtual NFs (VNFs) and virtual links, meet key performance
+   requirements.  In this context, the inclusion of Data Center (DC)
+   platforms, such as OpenStack [openstack], into the SDN infrastructure
+   is far from trivial.
+
+   Virtual Functions of this kind, for network and non network (e.g.
+   computing) tasks, are generally available in heterogeneous pools
+   under different administrative domains, being them related to the
+   hosting infrastructures in which they originate.  It is emerging a
+   need to interconnect, federate and implement policy control on these
+   pools of virtual resources, in order to abstract different
+   infrastructures, resources and functions, as well as procedures by
+   physical operators and infrastructure owners.  This can allow
+   defining larger virtual overlays where different resources and
+   functions are deployed, combined and handled in the form of virtual
+   instances irrespective of the administrative domain and specific
+   technology from which they originate.  Examples of application
+   contexts in which this federation of virtual function pools may occur
+   are:
+
+   o  large scale experimentation over programmable networks, which
+      allows to reserve slices of network and non-network resources from
+      different federated providers to run experiments on network
+      control, protocols and algorithms at large scale (e.g.  [FELIX]);
+
+   o  virtual infrastructure operators, who intend to implement their
+      network service offer over a completely virtual infrastructure in
+      the form of virtual network nodes and functions, virtual servers
+      and storage, etc., all procured as a service from physical
+      providers.
+
+   In this document we examine the problems arising as one combines
+   these two formerly isolated environments in an effort to create a
+   unified production environment and discuss the associated emerging
+   challenges.  Our goal is the definition of a production environment
+   that allows multi-vendor and multi-domain operation based on open and
+   interoperable implementations of the key entities described in the
+   remainder of this document.
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 4]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   This document also discusses extent to which a recursive resource
+   orchestration framework can be a solution for federated virtual
+   network functions across multi-domain heterogeneous environments from
+   different providers.  To achieve this, the architecture uses a
+   combination of recursive and hierarchical configurations for
+   orchestration, request delegation and inter-domain dependency
+   management, with resource orchestrating entities (Resource
+   Orchestrators, RO) responsible for synchronization of resources
+   available in particular administrative domains.
+
+   This document is being discussed on the nfvrg@irtf.org mailing list.
+
+2.  Terminology
+
+   We use the term compute and "compute and storage" interchangeably
+   throughout the document.
+
+   Moreover, we use the following definitions, some of which are
+   established in [ETSI-NFV-Arch].
+
+   Network Function Virtualization (NFV).  The principle of separating
+      network functions from the hardware they run on by using virtual
+      hardware abstraction.
+
+   NFV Infrastructure Point of    Presence (NFVI PoP).  Any combination
+      of virtualized compute, storage and network resources.
+
+   NFV Infrastructure (NFVI).  Collection of NFVI PoPs under one
+      orchestrator.
+
+   Virtual Network Function(VNF).  One or more virtual machines running
+      different software and processes, on top of industry standard high
+      volume servers, switches and storage, or even cloud computing
+      infrastructure, and capable of implementing network functions
+      traditionally implemented via custom hardware appliances and
+      middleboxes (e.g. router, NAT, Firewall, load-balancer, etc.)
+
+   VNF Island.  A set of virtualized network functions and related
+      network and IT resources under the same administrative ownership/
+      control.  A VNF island could consist of multiple zones, each
+      characterized by a specific set of control tools & interfaces.
+
+   VNF Zone.  A set of virtual network functions grouped for homogeneity
+      of technologies and/or control tools and/or interfaces (e.g.  L2
+      switching zone, optical switching zone, OF protocol controlled
+      zone, other transit domain zone with a control interface).  The
+      major goal of defining SDN zones is to implement appropriate
+      policies for increasing availability, scalability and control of
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 5]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+      the different resources of the island.  Examples of zone
+      definitions are available in popular Cloud Management Systems
+      (CMS) like Cloudstack (e.g. refer to the Cloudstack Infrastructure
+      partitioning into regions, zones, pods, etc., [cloudstack]) and
+      OpenStack (e.g. refer to the infrastructure partitioning in
+      availability zones and host aggregates [openstack]).
+
+   Virtualized Network Function                         Forwarding Graph
+    (VNF FG).
+      An ordered list of VNFs creating a service chain.
+
+   Management and Orchestration (MANO).  In ETSI NFV framework
+      [ETSI-NFV-MANO], this is the global entity responsible for
+      management and orchestration of NFV lifecycle.
+
+   Transit network domains.  The network domains use a Bandwidth on
+      Demand Interface to expose automatically and on-demand control of
+      connectivity services and, optionally, inter-domain topology
+      exchange.  In order to federate resources belonging to distant
+      facilities (i.e. islands/zones) it must be ensured that
+      interconnectivity is provided on-demand and with a specific
+      granularity.
+
+   Slice.  A user-defined subset of virtual networking and IT resources,
+      created from the physical resources available in federated VNF
+      Zones and VNF Islands.  A VNF Slice has the basic property of
+      being isolated from other slices defined over the same physical
+      resources, and being dynamically extensible across multiple VNF
+      Islands.  Each VNF Slice instantiates the specific set of control
+      tools of the specific zones it traverses.
+
+   Resource Orchestrator (RO).  Entity responsible for orchestrating
+      end-to-end network service and resources reservation in terms of
+      compute, storage and network functions over the infrastructure, as
+      well as delegating end-to-end resource and service provisioning in
+      a technology-agnostic way.
+
+   Resource Managers (RMs).  Entity responsible for controlling and
+      managing different types of resources and/or network functions.
+
+   Further, we make use of the following terms:
+
+   NF:  a network function, either software-based (VNF) or appliance-
+      based.
+
+   SW:  a (routing/switching) network element with a programmable
+      control plane interface.
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 6]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   DC:  a data center network element which in addition to a
+      programmable control plane interface offers a DC control interface
+
+   LSI:  Logical Switch Instance - a software switch instance.
+
+   CN:  an element equipped with compute and/or storage resources.
+
+   UN:  Universal Node - an innovative element that integrates defined
+      and manages in a unified platform both compute and networking
+      components [UNIFY]).
+
+3.  Motivations
+
+   Figure 1 illustrates a simple service graph comprising three network
+   functions (NFs).  For the sake of simplicity, we will assume only two
+   types of infrastructure resources, namely SWs and DCs as per the
+   terminology introduced above, and ignore appliance-based NFs for the
+   time being.  The goal is to implement the given service based on the
+   available infrastructure resources.
+
+
+
+                              fr2  +---+ fr3
+                              +->o-|NF2|-o-+
+                              |  4 +---+ 5 |
+                        +---+ |            V +---+
+                  1-->o-|NF1|-o----------->o-|NF3|-o-->8
+                      2 +---+ 3     fr1    6 +---+ 7
+
+
+
+                          Figure 1: Service graph
+
+   The service graph definition contains NF types (NF1, NF2, NF3) along
+   with the
+
+   o  corresponding ports (NF1:{2,3}; NF2:{4,5}; NF3:{6,7})
+
+   o  service access points {1,8} corresponding to infrastructure
+      resources,
+
+   o  definition of forwarding behaviour (fr1, fr2, fr3)
+
+   The forwarding behaviour contains classifications for matching of
+   traffic flows and corresponding outbound forwarding actions.
+
+   Assume now that we would like to use the infrastructure (topology,
+   network and software resources) depicted in Figure 2 and Figure 3 to
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 7]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   implement the aforementioned service graph.  That is, we have three
+   SWs and two Points of Presence (PoPs) with DC software resources at
+   our disposal.
+
+
+
+                                   +---+
+                                +--|SW3|--+
+                                |  +---+  |
+                    +---+       |         |      +---+
+                 1  |PoP|    +---+      +---+    |PoP|  8
+                 o--|DC1|----|SW2|------|SW4 |---|DC2|--o
+                    +---+    +---+      +---+    +---+
+
+                [---SP1---][--------SP2-------][---SP3----]
+
+
+                    Figure 2: Infrastructure resources
+
+
+
+                       +----------+
+                       |  +----+  |PoP DC (== NFVI PoP)
+                       |  | CN |  |
+                       |  +----+  |
+                       |   |  |   |
+                       |  +----+  |
+                     o-+--| SW |--+-o
+                       |  +----+  |
+                       +----------+
+
+
+
+       Figure 3: A virtualized Point of Presence (PoP) with software
+                       resources (Compute Node - CN)
+
+
+                               +----------+
+                               |  +----+  | UN
+                               |  | CN |  |
+                             o-+--+----+--+-o
+                               |  | SW |  |
+                               |  +----+  |
+                               +----------+
+
+
+    Figure 4: Universal Node - an innovative element that integrates on
+         the same platform both compute and networking components
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 8]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   In the simplest case, all resources would be part of the same service
+   provider (SP) domain.  We need to ensure that each entity in Figure 2
+   can be procured from a different vendor and therefore
+   interoperability is key for multi-vendor NFVI deployment.  Without
+   such interoperability different technologies for data center and
+   network operation result in distinct technology domains within a
+   single carrier.  Multi-technology barriers start to emerge hindering
+   the full programmability of the NFVI and limiting the potential for
+   rapid service deployment.
+
+   We are also interested in a multi-operation environment, where the
+   roles and responsibilities are distributed according to some
+   organizational structure within the organization.  Finally, we are
+   interested in multi-provider environment, where different
+   infrastructure resources are available from different service
+   providers (SPs).  Figure 2 indicates a multi-provider environment in
+   the lower part of the figure as an example.  We expect that this type
+   of deployments will become more common in the future as they are well
+   suited with the elasticity and flexibility requirements [NSC].
+
+   Figure 2 also shows the service access points corresponding to the
+   overarching domain view, i.e., {1,8}. In order to deploy the service
+   graph of Figure 1 on the infrastructure resources of Figure 2, we
+   will need an appropriate mapping which can be implemented in
+   practice.
+
+   Figure 3 shows the structure of a PoP DC that presents compute and
+   network resources while Figure 4 shows the structure of the Universal
+   Node (UN), an innovative element that integrates on the same platform
+   both compute and networking components and that could be used in the
+   infrastructure as an alternative to elements depicted in Figure 2 for
+   what concerns network and/or compute resources.
+
+   The coordinated creation of a virtual environment with pools of
+   virtual network and non-network functions from heterogeneous, multi-
+   domain and geographically distributed facilities requires appropriate
+   tools for resource and virtual function management and control
+   capable of orchestration and policy control across VNF islands, zones
+   and domains defined above.
+
+4.  Recursive orchestration in federated virtual environments
+
+4.1.  Problem Statement
+
+   Elements that belong to a control and orchestration layer generally
+   operate in a hierarchical way (parent-child) for more efficient
+   multi-domain information management and sharing.  This is generally
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                 [Page 9]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   referred as Inter-island Orchestration Space [FELIX-D2.1]
+   [FELIX-D2.2].
+
+   Once the set of virtual network and non-network functions is
+   determined, reserved and deployed across the different islands, the
+   resulting virtual network environment is ready for being used as a
+   User Space by any tool or application the user wants to deploy in it.
+
+   In Figure 5 we illustrate a resource orchestrator (RO) as a
+   functional entity whose task is to map the service graph to the
+   infrastructure resources under some service constraints and taking
+   into account the NF resource descriptions.
+
+
+
+                         fr2  +---+  fr3
+                         +->o-|NF2|-o-+
+                         |  4 +---+ 5 |
+                   +---+ |            V +---+
+             1-->o-|NF1|-o----------->o-|NF3|-o-->8
+                 2 +---+ 3     fr1    6 +---+ 7
+
+                                  ||
+                                  ||
+              +--------+          \/        SP0
+              |   NF   |   +---------------------+
+              |Resource|==>|Resource Orchestrator|==> MAPPING
+              | Descr. |   |      (RO)           |
+              +--------+   +---------------------+
+                                  /\
+                                  ||
+                                  ||
+
+                                +---+
+                             +--|SW3|--+
+                             |  +---+  |
+                 +---+       |         |      +---+
+              1  |PoP|     +---+     +---+    |PoP|  8
+              o--|DC1|-----|SW2|-----|SW4|----|DC2|--o
+                 +---+     +---+     +---+    +---+
+
+             [---SP1---][--------SP2-------][---SP3----]
+             [-------------------SP0-------------------]
+
+
+   Figure 5: Resource Orchestrator: information base, inputs and output
+
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 10]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   NF resource descriptions are assumed to contain information necessary
+   to map NF types to a choice of instantiable VNF flavor or a selection
+   of an already deployed NF appliance and networking demands for
+   different operational policies.  For example, if energy efficiency is
+   to be considered during the decision process then information related
+   to energy consumption of different NF flavours under different
+   conditions (e.g., network load) should be included in the resource
+   description.
+
+   Note that we also introduce a new service provider (SP0) which
+   effectively operates on top of the virtualized infrastructure offered
+   by SP1, SP2 and SP3.
+
+   In the Inter-island Orchestration Space (see Figure 6), Resource
+   Orchestrators (RO) are responsible for orchestrating end-to-end
+   network services and resources reservations in the whole
+   infrastructure.  Moreover, ROs should be able to delegate end-to-end
+   resource and service provisioning in technology-agnostic way.
+
+   ROs are connected to different types of Resource Managers (RMs),
+   which are in turn used to control and manage different kinds of
+   technological resources.  For example, the VNF RM WAN side provides
+   connectivity between L1/L2 network domains at the two ends.  This
+   management can be achieved using frame, packet or circuit switching
+   technologies and should support different protocols.
+
+   On the other hand, the VNF RM (LAN side) manages the network
+   infrastructure composed of SDN-enabled devices, e.g.  OpenFlow
+   switches or routers.  In short, it can control the user traffic
+   environment by updating flow tables in physical devices.
+
+   In addition, the Virtual Function pool RM for computing resources is
+   responsible for setting up and configuring computing resources, i.e.
+   creating new virtual machine instances, powering on/off instances,
+   network interface card configuration, etc.
+
+   Authentication and Authorization Infrastructure (AAI) for
+   authenticating and authorizing users, is a cross layer function in
+   the Inter-island Orchestration Space, because it serving as a 'trust
+   anchor' to facilitate authN/authZ procedures in federated facilities.
+
+   Similarly, Monitoring allows to retrieve, correlate and abstract
+   statistics from the different components of the physical and virtual
+   resource pools and from the user's slice.
+
+   Figure 6 shows a parent RO coordinating orchestration actions at NFV
+   island level under the responsibility of two child ROs, each
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 11]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   orchestrating different types of RMs for the different kinds of
+   virtual network and non-network function pools.
+
+
+   +---+           +-------------------------------------------+   +---+
+   |   |           |          RESOURCE ORCHESTRATOR - RO       |   |   |
+   |   |-----------|                (parent)                   |---|   |
+   |   |           +-------------------------------------------+   |   |
+   |   |                     |                            |        |   |
+   |   |                     |                            |        |   |
+   |   |  +-------------------------------------+    +---------+   |   |
+   | M |  |                  RO                 |    |    RO   |   |   |
+   | O |--|               (child)               |    | (child) |---|   |
+   | N |  +-------------------------------------+    +---------+   | A |
+   | I |        |             |            |              |        | A |
+   | T |        |             |            |              |        | A |
+   | O |  +-----------+ +----------+ +----------+   +-----------+  |   |
+   | R |  |  VF POOL  | | VNF POOL | | VNF POOL |   |  Virtual  |  |   |
+   | I |--|  MANAGER  | | MANAGER  | | MANAGER  |   |    pool   |--|   |
+   | N |  |(computing)| |(LAN side)| |(WAN side)|   | manager(s)|  |   |
+   | G |  +-----------+ +----------+ +----------+   +-----------+  |   |
+   |   |        |             |             |             |        |   |
+   |   |  +----------+  +----------+ +----------+    +----------+  |   |
+   |   |--|    VF    |  |    VNF   | |    VNF   |    |    VNF   |--|   |
+   +---+  +----------+  +----------+ +----------+    +----------+  +---+
+
+
+           Figure 6: Recursive Orchestration architecture model
+
+4.2.  Resource Orchestrator
+
+   RO is the entity that orchestrates the different resources in the
+   Inter-island Orchestration Space.
+
+   There are two different modes in which RO may operate:
+
+   o  Parent
+
+   o  Child
+
+   For an inter-island federation, RO operates in parent mode and
+   attaches to child ROs, whilst in child mode ROs communicate with RMs.
+
+   One of RO's main objectives is to forward requests within the
+   infrastructure, either by:
+
+   o  Passing user requests to the appropriate resource management
+      systems (RMs) in the layer below, as with any hierarchical mode.
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 12]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   o  Proxying requests between other ROs in a recursive mode, depending
+      on the federation policy that is configured for the domain where
+      the RO is located.  For this to work it is necessary to ensure
+      similar interfaces for each orchestrator.
+
+   Key functions of the RO can be summarized as follows.  RO manages the
+   different VNF islands and users in terms of their resource and data
+   access policies.  It mediates between the user and the technology
+   specific to a Resource Manager (RM) by means of delegation.  It is
+   expected that different RMs will handle, for example, technology-
+   dependent aspects in SDN domains (VNF RM LAN side) and transit
+   network domains (VNF RM WAN side), as well non-network resource
+   pools.  As part of this mediation, the RO will engage in the creation
+   (provisioning), maintenance, monitoring, and deletion (release) of
+   the used slices.
+
+   RO also maintains a high-level cross-island topological view, which
+   summarizes the different resources pools available along with their
+   inter-connections.  This topology view is initialized and updated by
+   the underlying RMs, thus implementing a distributed hierarchical
+   resource discovery function.  It determines which domains and which
+   inter-domain resources should be used to instantiate a given end-to-
+   end service for a particular experimenter's slice.
+
+   For example, based on a user request for a given type of service to
+   be instantiated in two remote islands, parent RO determines which
+   specific resource domains should be involved.
+
+   Finally, RO coordinates and ensures that the correct sequence of
+   actions takes place with respect to the operation of the technology-
+   specific RMs.  This includes the provisioning of the slice resources
+   as per user's requirements.
+
+   RO also collects and correlates status alarms and warnings on
+   resources, either generated by the resources themselves or the
+   services managing them.  This is done on a per-slice basis and
+   proceeds with reporting/notifying the corresponding users.
+
+   In order for the RO to execute the resource mapping (which in general
+   is a hard problem) it needs to operate on the combined control plane
+   illustrated in Figure 7.  In this figure we mark clearly that the
+   interfaces to the compute (DC) control plane and the SDN (SW) control
+   plane are distinct and implemented through different interfaces/APIs.
+   For example, Ic1 could be the Apache CloudStack API, while Ic2 could
+   be a control plane protocol such as ForCES or OpenFlow [RFC7426].  In
+   this case, the orchestrator at SP0 (top part of the figure) needs to
+   maintain a tight coordination across this range of interfaces.
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 13]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+                               +---------+
+                               |Orchestr.|
+                               |   SP0   |
+                          _____+---------+_____
+                         /          |          \
+                        /           V Ic2       \
+                       |       +---------+       |
+                   Ic1 V       |SDN Ctrl |       V  Ic3
+              +---------+      |   SP2   |      +---------+
+              |Comp Ctrl|      +---------+      |Comp Ctrl|
+              |  SP1    |        /  |  \        |   SP3   |
+              +---------+    +---   V   ----+   +---------+
+                   |         |    +----+    |         |
+                   |         |    |SW3 |    |         |
+                   V         |    +----+    |         V
+                  +----+     V   /      \   V     +----+
+               1  |PoP |    +----+      +----+    |PoP |  8
+               o--|DC1 |----|SW2 |------|SW4 |----|DC2 |--o
+                  +----+    +----+      +----+    +----+
+
+              [----SP1---][---------SP2--------][---SP3----]
+              [---------------------SP0--------------------]
+
+
+    Figure 7: The RO Control Plane view.  Control plane interfaces are
+    indicated with (line) arrows.  Data plane connections are indicated
+                            with simple lines.
+
+   Different deployment models are possible for a Resource Orchestration
+   entity:
+
+   o  hierarchical centralized (see Figure 8.A)
+
+   o  distributed in chain (see Figure 8.B
+
+   o  distributed full-mesh (see Figure 8.C)
+
+   o  hierarchical hybrid (see Figure 9)
+
+   The hierarchical hybrid model is deemed to guarantee the optimal
+   trade-off between effectiveness of control, federation, trust
+   adjacencies and scalability.
+
+
+
+
+
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 14]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+              +-----------+
+              |     RO    |
+              +-----------+
+              /     |    \                +------+   +------+   +------+
+             /      |     \               |  RO  |---|   RO |---|  RO  |
+            /       |      \              +------+   +------+   +------+
+     +------+   +------+   +------+
+     |  RO  |   |  RO  |   |  RO  |
+     +------+   +------+   +------+
+                 (A)                                    (B)
+
+
+                  +--------------------+
+                  |                    |
+              +------+   +------+   +------+   +------+
+              |  RO  |---|  RO  |---|  RO  |---|  RO  |
+              +------+   +------+   +------+   +------+
+                  |         |                    |  |
+                  |         +--------------------+  |
+                  +---------------------------------+
+                                 (C)
+
+
+
+
+                      Figure 8: RO deployment models
+
+
+
+                +-----------+                      +-----------+
+                |     RO    +----------------------+     RO    |
+                +-----------+                      +-----------+
+                /     |    \                       /     |    \
+               /      |     \                     /      |     \
+              /       |      \                   /       |      \
+       +------+   +------+   +------+     +------+   +------+   +------+
+       |  RO  |   |  RO  |   |  RO  |     |  RO  |   |  RO  |   |  RO  |
+       +------+   +------+   +------+     +------+   +------+   +------+
+
+
+                   Figure 9: Hybrid RO deployment model
+
+5.  Policy-Based Resource Management Framework
+
+   Aside from the main functions described above, each Resource Manager
+   is also part of the Authentication and Authorization Infrastructure
+   (AAI).
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 15]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   AAI provides the necessary mechanisms to authenticate and authorize
+   users, as well as provide accountability.  In order to realize these
+   functions, our architecture suggests the implementation of a
+   ClearingHouse (CH) , which establishes the root of a trust chain.
+   This chain can then be used to verify the identity and privileges of
+   all actors in this architecture.
+
+   By using a certificate-based approach, the architecture has
+   flexibility to easily federate different VNF islands.  By installing
+   ClearingHouse certificates, actors can be verified against different
+   ClearingHouses, and thus can utilize a multitude of resources.
+
+   A ClearingHouse (CH) comprises a set of related services supporting
+   AAA operations.  CH serves as a central location to lookup
+   information about members, slices and other available services in the
+   VNF island.
+
+   There are three groups of CH services:
+
+   o  Registration and management services to lookup for available
+      services in the facility as well as register new members, projects
+      and slice objects.
+
+   o  Authentication and Authorization services to manage the
+      credentials of all entities and enforce predefined policies.
+
+   o  Accountability services to facilitate tracking of all
+      transactions.
+
+   These services are offered by CH with the help of the following
+   functions and authorities.
+
+   o  The Member Authority (MA) is responsible for managing and
+      asserting user attributes.  It generates member certificates for
+      identification purposes and credentials to specify the attributes
+      and roles associated with each member.  The MA maintains a
+      database of registered members and their associated information
+      including, but not limited to, certificates and credentials, SSH
+      (Secure Shell) and SSL (Secure Sockets Layer) keys as well as the
+      human readable identity information like real name, institute,
+      contact details.
+
+   o  In addition, a Certificate Revocation List (CRL) can also be
+      accessed from MA for use in certificate verification process.
+
+   o  The Slice Authority (SA) creates and manages slice objects and the
+      associated member credentials (called slice credentials).  Slice
+      credentials map member roles and privileges on a slice object,
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 16]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+      i.e., slice credentials authorize user actions at aggregates
+      within a slice context.  SA also enables related operations on
+      slice objects like look up, modify, renew, etc.
+
+   o  The Project Service (PS) hosted at SA maintains a list of existing
+      projects and asserts the member roles.
+
+   o  The Service Registry (SR) serves as the primary network contact
+      point as it keeps a record of all available registered services
+      such as SA and MA and offers their URIs.
+
+   o  The Logging Service (LS) realizes accountability by storing the
+      transaction details between user-agents and aggregate managers.
+
+   The user-agents and ROs can communicate with the CH through XMLRPC
+   calls over a secured connection (SSL).
+
+   AAI is ultimately responsible for granting access to the resources,
+   and can be further extended through policies, which are a set of
+   rules defined by the administrators to implement an upper-level
+   control on the resource usage (e.g. defining a maximum virtual memory
+   value for a VM resource or a maximum number of flow spaces).
+
+5.1.  Certificate-based authN/authZ (C-BAS)
+
+   Since VNF pools are finite, access to virtual functions and resources
+   should be policed according to set authorization levels throughout
+   the life-cycle of each experiment.
+
+   Access control is also required to ensure that infrastructures remain
+   operational.
+
+   Although a number of solutions for authentication (authN) and
+   authorization(authZ), such as Kerberos and LDAP, already exist, they
+   have several shortcomings: tight-coupling of authN/authZ mechanisms
+   with the implementation of the architecture; little or no regard for
+   re-usability (i.e., one authN/authZ architecture cannot be reused by
+   a different infrastructure); and no support for a standard access
+   interface between networks and the authN/authZ architecture.
+
+   C-BAS, certificate-based authN/authZ solution, is designed to serve
+   all these requirements and include i) multiple authoritative source
+   of trust, ii) flexible system of authorization, and iii)
+   synchronization of authN/authZ entities to realize federations.
+
+   For example, the Registry Service of C-BAS may be exploited to
+   implement load balancing and fail-over features.  In addition, the
+   evolved architecture of C-BAS makes it robust against disruptions and
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 17]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   interference from attackers and enables support for various member
+   roles and permissions.
+
+   C-BAS employs X.509 certificates and SFA styled credentials to
+   realize AAA services.
+
+   The implementation of C-BAS is publicly available (www.eict.de/c-bas)
+   and is based on eiSoil (github.com/EICT/eiSoil/wiki) thus exploiting
+   its plug-in capabilities that enable importing the functionality from
+   one plug-in module to another.
+
+5.2.  Resource Managers
+
+5.2.1.  VNF Pool manager functionality
+
+   A VNF pool manager is a functional entity in charge of controlling a
+   specific type of VNFs, being the equivalent of the SFA Aggregate
+   Manager (see [SFA]).  As such, a VNF pool manager is a Resource
+   Manager within the federation, capable of discovering resources,
+   capabilities ans functions from physical infrastructure, abstracting
+   them before publishing to the supervising RO and eventually capable
+   of managing specific technology-specific configurations and
+   provisioning towards the actual resource layer.
+
+   Whilst the northbound interface of the Resource Manager is abstract
+   and unified across different technology domains (e.g. based on REST
+   or XMLRPC), the southbound interface is based on the specific
+   interfaces exposed by the different types of resources (e.g.
+   OpenFlow, NETCONF, SNMP, CLI, OVSDB, etc.)
+
+5.2.2.  OpenFlow-based VNF pool manager
+
+   The VNF pool manager LAN side could be OpenFlow-based and provide the
+   mechanisms to control the network infrastructure inside a domain with
+   SDN-enabled hardware (typically, OpenFlow-enabled switches and
+   routers).  The Inter-island Orchestration Space architecture is
+   agnostic of the physical network resources.  For a SDN domain based
+   on OpenFlow users can control network behaviour by actively updating
+   the flow tables of the network elements.  This update is usually done
+   by a SDN controller, which is configured according the user's
+   requirements.  Typically, the controller will respond to an event
+   generated by a network element, such as a flow establishment request,
+   and update the flow tables appropriately.
+
+   For the network manager, the VNF pool manager LAN side will provide
+   management functionalities for the overall network resources and
+   virtual network functions in the LAN or data center.  This element
+   acts as a proxy between the resources and the SDN controller, and
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 18]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   grants or denies the forwarding of control messages.  The VNF pool
+   manager LAN side provides functions to build a unique flow space for
+   every experimenter so that traffic is isolated and distinguished from
+   that of other slices (e.g. like FlowVisor or OVX do).
+
+   These functionalities can prevent issues arising when several users
+   wish to use the same physical resources.  In detail, a flow space can
+   contain a range of differentiators: source or destination IPs or MAC
+   addresses, TCP or UDP ports, for example.
+
+   One way to separate the traffic is assigning a VLAN tag to each
+   packet.  In this case, the special purpose controller inspects the
+   incoming packet, identifies the VLAN tag and sends it to the
+   corresponding SDN controller.
+
+5.2.3.  Stitching Entity VNF pool manager
+
+   The Stitching Entity VNF pool Manager is among the pool managers WAN
+   side, and is in charge to control the Stitching Entity (SE), a
+   network element providing necessary translation mechanisms for a
+   slice setup on top of the L2 protocol stack performed in order to
+   hide from a user the real complexity of the multi-domain WAN
+   transport network.
+
+   The main responsibility of the SE is to provide at least one of the
+   following network functions:
+
+   o  QinQ, to encapsulate slice traffic into a transport network
+      Ethernet frames,
+
+   o  VLAN translation mechanism to hide from a user the actual VLAN
+      tagging, used by carrier networks while interconnecting two or
+      more VNF islands.
+
+   The SE RM communicates with an RO, a parent control entity, to i)
+   advertise an internal topology and capabilities of the SE under its
+   control, ii) receive requests, and iii) notify the RO about success
+   and failure events.
+
+   A single SE RM must relate only to a single RO and must be
+   implemented in each VNF island.  A single SE RM is responsible for a
+   single SE or a group of SEs, which belong to a network domain and act
+   as an entry point to the island infrastructure.
+
+
+
+
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 19]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+5.2.4.  Transit network VNF pool manager
+
+   The main responsibility of the Transit VNF pool manager (TN RM) is to
+   support the FELIX architecture with network connectivity mechanisms
+   within particular domains and between them.
+
+   In order to deliver the network services, it must be integrated with
+   its southbound interfaces within a particular network domain.  Such a
+   domain can use different L1/L2 technologies and may be controlled by
+   a Network Management System (NMS) or by specific interfaces or
+   protocols that are technology-dependent, and unique in each case.
+
+   The Transit network VNF pool manager must communicate with an RO in
+   order to i) advertise resources under its control, ii) receive
+   requests, and iii) notify the RO about success and failure events.
+
+   A single TN RM must relate only to a single RO.  A single TN RM is
+   responsible for a group of particular network resources, which belong
+   to a network domain and are usually managed by a single entity, i.e.
+   a network administrator or NMS.
+
+   TN RM usually manages L1/L2 transport networks, which are composed of
+   physical devices using frames/packets or circuit switching
+   technologies and support different protocols, e.g.  MPLS/GMPLS.  In
+   order to support inter-island connectivity between existing VNF
+   islands, the TN RM also supports the management of VPN set up and
+   tear down procedures.
+
+   The TN RM southbound interface can be based on Bandwidth on Demand
+   interfaces, like GMPLS UNI or similar approaches.
+
+5.2.5.  RM for virtual computing
+
+   The function of the Computing Resource pool Manager (C-RM) is to
+   provide a method to assign, set up and configure computing resources.
+
+   C-RM manages physical computing resources, and also the configuration
+   of its own slicing mechanisms (e.g. common hypervisors or other
+   virtualization stacks) and computer resources as presented to the
+   user (OS images, network interface configuration, and so on).
+
+   The management of physical computing resources should provide a
+   method for rebooting machines, remote control (of a machine's
+   console), or hard power on/off of a machine experiencing problems,
+   for example using a networked PDU (power distribution unit).
+
+   Management is typically performed only when problems occur, and when
+   a slice is created, destroyed or modified.  Migration of computing
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 20]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   resources to other islands may also require reconfiguration.  This
+   includes the configuration of network interfaces of the computing
+   resource, and setting the underlying resources (e.g. hypervisor,
+   physical machine), such that those interfaces are bridged onto the
+   correct physical interfaces.  In particular, it may be necessary to
+   configure a slicing mechanism in this bridging, in the case where
+   multiple computing resources have to share a single physical
+   interface.  This would typically be achieved using a (software-based)
+   SDN solution inside the virtualization platform.  Once the SDN
+   solution has been properly set up, it becomes an SDN resource, which
+   is managed by the VNF pool manager LAN side.
+
+6.  Challenges
+
+   We summarize in this section key questions and challenges which arise
+   from the proposed framework and resource orchestration and management
+   concepts.
+
+6.1.  Orchestration
+
+   Firstly, as motivated in Section 3, orchestrating networking
+   resources appears to have a recursive nature at different levels of
+   the hierarchy.  Would a programmatic interface at the combined
+   compute and network abstraction better support this recursive and
+   constraint-based resource allocation?
+
+   Secondly, can such a joint compute, storage and network programmatic
+   interface allow an automated resource orchestration similar to the
+   recursive SDN architecture [ONF-SDN-ARCH]?
+
+6.2.  Resource description
+
+   Prerequisite for joint placement decisions of compute, storage and
+   network is the adequate description of available resources.  This
+   means that the interfaces (IcA, IcB etc. in Figure 7) are of
+   bidirectional nature, exposing resources as well as reserving.  There
+   have been manifold attempts to create frameworks for resource
+   description, most prominently RDF of W3C, NDL, the GENI RPC and its
+   concept of Aggregate Managers, ONF's TTP and many more.
+
+   Quite naturally, all attempts to standardize "arbitrary" resource
+   descriptions lead to creating ontologies, complex graphs describing
+   relations of terms to each other.
+
+   Practical descriptions of compute resources are currently focusing on
+   number of logical CPU cores, available RAM and storage, allowing,
+   e.g., the OpenStack Nova scheduler to meet placement decisions.  In
+   heterogeneous network and compute environments, hardware may have
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 21]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   different acceleration capabilities (e.g., AES-NI or hardware random
+   number generators), so the notion of logical compute cores is not
+   expressive enough.  In addition, the network interfaces (and link
+   load) provide important information on how fast a certain VNF can be
+   executed in one node.
+
+   This may lead to a description of resources as VNF-FGs themselves.
+   Networking resource (SW) may expose the capability to forward and
+   process frames in, e.g., OpenFlow TableFeatures reply.  Compute nodes
+   in the VNF-FG would expose lists of capabilities like the presence of
+   AES hardware acceleration, Intel DPDK support, or complex functions
+   like a running web server.  An essential part of the compute node's
+   capability would be the ability to run a certain VNF of type X within
+   a certain QoS spec.  As the QoS is service specific, it can only be
+   exposed by a control function within the instantiated VNF-FG.
+
+6.3.  Dependencies (de-composition)
+
+   Salt [SALT], Puppet [PUPPET], Chef [CHEF] and Ansible [ANSIBLE] are
+   tools to manage large scale installations of virtual machines in DC
+   environments.  Essentially, the decomposition of a complex function
+   into its dependencies is encoded in "recipes" (Chef).
+
+   OASIS TOSCA [TOSCA] specification aims at describing application
+   layer services to automate interoperable deployment in alternative
+   cloud environments.  The TOSCA specification "provides a language to
+   describe service components and their relationships using a service
+   topology".
+
+   Is there a dependency (decomposition) abstraction suitable to drive
+   resource orchestration between application layer descriptions (like
+   TOSCA) and cloud specific installations (like Chef recipes)?
+
+6.4.  Elastic VNF
+
+   In many use cases, a VNF may not be designed for scaling up/down, as
+   scaling up/down may require a restart of the VNF which the state data
+   may be lost.  Normally a VNF may be capable for scaling in/out only.
+   Such VNF is designed running on top of a small VM and grouped as a
+   pool of one VNF function.  VNF scaling may crossing multiple NFVI
+   PoPs (or data center)s in order to avoid limitation of the NVFI
+   capability.  At cross DC scaling, the result is that the new VNF
+   instance may be placed at a remote cloud location.  At VNF scaling,
+   it is a must requirement to provide the same level of Service Level
+   Agreement (SLA) including performance, reliability and security.
+
+   In general, a VNF is part of a VNF Forwarding Graph (VNF FG), meaning
+   the data traffic may traverse multiple stateful and stateless VNF
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 22]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   functions in sequence.  When some VNF instances of a given service
+   function chain are placed / scaled out in a distant cloud execution,
+   the service traffic may have to traverse multiple VNF instances which
+   are located in multiple physical locations.  In the worst case, the
+   data traffic may ping-pong between multiple physical locations.
+   Therefore it is important to take the whole service function chain's
+   performance into consideration when placing and scaling one of its
+   VNF instance.  Network and cloud resources need mutual
+   considerations, see [I-D.zu-nfvrg-elasticity-vnf].
+
+6.5.  Measurement and analytics
+
+   Programmable, dynamic, and elastic VNF deployment requires that the
+   Resource Orchestrator (RO) entities obtain timely information about
+   the actual operational conditions between different locations where
+   VNFs can be placed.  Scaling VNFs in/out/up/down, VNF execution
+   migration and VNF mobility, as well as right-sizing the VNFI resource
+   allocations is a research area that is expected to grow in the coming
+   years as mechanisms, heuristics, and measurement and analytics
+   frameworks are developed.
+
+   For example, Veitch et al.  [IAF] point out that NFV deployment will
+   "present network operators with significant implementation
+   challenges".  They look into the problems arising from the lack of
+   proper tools for testing and diagnostics and explore the use of
+   embedded instrumentation.  They find that in certain scenarios fine-
+   tuning resource allocation based on instrumentation can lead to at
+   least 50% reduction in compute provisioning.  In this context, three
+   categories emerge where more research is needed.
+
+   First, in the compute domain, performance analysis will need to
+   evolve significantly from the current "safety factor" mentality which
+   has served well carriers in the dedicated, hardware-based appliances
+   era.  In the emerging softwarized deployments, VNFI will require new
+   tools for planning, testing, and reliability assurance.  Meirosu et
+   al.  [I-D.unify-nfvrg-devops] describe in detail the challenges in
+   this area with respect to verification, testing, troubleshooting and
+   observability.
+
+   Second, in the network domain, performance measurement and analysis
+   will play a key role in determining the scope and range of VNF
+   distribution across the resources available.  For example, IETF has
+   worked on the standardization of IP performance metrics for years.
+   The Two-Way Active Measurement Protocol (TWAMP) could be employed,
+   for instance, to capture the actual operational state of the network
+   prior to making RO decisions.  TWAMP management, however, still lacks
+   a standardized and programmable management and configuration data
+   model [I-D.cmzrjp-ippm-twamp-yang].  We expect that as VNFI
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 23]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   programmability gathers interest from network carriers several IETF
+   protocols will be revisited in order to bring them up to date with
+   respect to the current operational requirements.  To this end, NFVRG
+   can play an active role in identifying future IETF standardization
+   directions.
+
+   Third, non-technical considerations which relate to business aspects
+   or priorities need to be modeled and codified so that ROs can take
+   intelligent decisions.  Meirosu et al.  [I-D.unify-nfvrg-devops]
+   identify two aspects of this problem, namely a) how high-level
+   network goals are translated into low-level configuration commands;
+   and b) monitoring functions that go beyond measuring simple metrics
+   such as delay or packet loss.  Energy efficiency and cost, for
+   example, can steer NFV placement.  In NFVI deployments operational
+   practices such as follow-the-sun will be considered as earlier
+   research in the data center context implies.
+
+7.  Positioning w.r.t. existing Orchestration Frameworks
+
+7.1.  Openstack orchestration
+
+   Among cloud orchestration solution, OpenStack is the facto common
+   reference through its Heat module [os-heat].
+
+   Openstack Heat implements an orchestration engine to launch multiple
+   composite cloud applications based on templates in the form of text
+   files that can be treated like code.
+
+   Many existing CloudFormation templates can be launched on OpenStack.
+   Heat provides both an OpenStack-native ReST API and a CloudFormation-
+   compatible Query API.
+
+   A Heat template describes the infrastructure for a cloud application
+   in a text file.  Infrastructure resources that can be described
+   include: servers, floating ips, volumes, security groups, users, etc.
+   Templates can also specify the relationships between resources (e.g.
+   this volume is connected to this server).
+
+   Heat also provides an autoscaling service.
+
+   Heat primarily manages cloud infrastructure, does not support
+   federation and AAI is bundled in the OpenStack framework.
+
+7.2.  OpenMANO
+
+   OpenMANO is an open source project which implements the reference
+   architecture for Management & Orchestration under standardization at
+   ETSI's NFV ISG (NFV MANO) [openmano].
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 24]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   OpenMANO consists of two main SW components:
+
+   o  NFV VIM (Virtualised Infrastructure Manager) to provide computing
+      and networking capabilities and to deploy virtual machines.
+
+   o  A reference implementation of an NFV-O (Network Functions
+      Virtualisation Orchestrator), which allows creation and deletion
+      of VNF templates, VNF instances, network service templates and
+      network service instances.
+
+   OpenMANO does not support federation and AAI as of today.
+
+7.3.  Other orchestration approaches: federated SDN infrastructures for
+      research experimentation
+
+   The FELIX project [FELIX] is part of an international research
+   experimentation infrastructure strategy (in Europe under the Future
+   Internet Research Experimentation - FIRE - framework), with a special
+   focus on SDN and Network Service Interface (NSI) developed by the
+   Open Grid Forum.  FELIX is implementing federation and integration of
+   different network and computing resources controlled via SDN and NSI
+   in a multi-domain heterogeneous environment across, initially
+   spanning Europe and Japan.  FELIX consortium has designed and is
+   implementing an architecture that extends and advances assets
+   previously developed in other Future Internet projects (e.g.
+   OFELIA), by realizing the federation concepts defined in SFA [SFA]
+   with a combination of recursive and hierarchical orchestration,
+   request delegation and inter-domain dependency management.  Other
+   research testbeds have been working over the past year on federation
+   of SDN resources.  Three of them are particularly relevant on the SDN
+   area: OFELIA, FIBRE and GridARS.
+
+   The OFELIA project [OFELIA] established a pan-European experimental
+   network facility which enables researchers to experiment with real
+   OpenFlow-enabled network equipment and to control and extend the
+   network itself in a precise and dynamic mode.  The OFELIA facility
+   uses the OpenFlow protocol (and related tools) to support network
+   virtualization and control of the network environment through secure
+   and standardised interfaces.  OFELIA consists of two layers.  The
+   physical layer is comprised of the computing resources (servers,
+   processors) and network resources (routers, switches, links, wireless
+   devices and optical components).  Resources are managed by the OFELIA
+   Control Framework (OCF).  Furthermore, the control framework layer
+   contains components which manage and monitor the applications and
+   devices in the physical layer.  Aggregate Managers and Resource
+   Managers are components of this layer, which can be seen as the
+   combination of three components: Expedient is the GUI and allows the
+   connection and federation with different Aggregate Managers via its
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 25]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   plugins; Aggregate Managers (AMs) enable experimenters to create both
+   compute and network resources via the VT AM and OF AM respectively;
+   Resource Managers directly interact with the physical layer,
+   provisioning compute resources (OFELIA Xen Agent) or flow rules to
+   establish the topology (FlowVisor).
+
+   The FIBRE project [FIBRE] federates SDN testbeds distributed across
+   Europe and Brazil.  The FIBRE-EU system builds on top of the OFELIA
+   OCF and incorporates several wireless nodes based on commercial Wi-Fi
+   cards and Linux open source drivers.  Unlike OFELIA, the FIBRE
+   infrastructure is managed by different types of control and
+   monitoring frameworks (CMFs).  FIBRE deployed two top-domain
+   authorities, one in Brazil and one in Europe, to manage and own
+   resources in the respective continents.  These inter-connected
+   authorities interoperate to allow the federation of BR and EU
+   testbeds.
+
+   In Japan, GridARS [GRIDARS]  provides a reference implementation of
+   the Open Grid Forum (OGF) Network Services Interfaces Connection
+   Service (NSI-CS) protocol standard.  GridARS can coordinate multiple
+   resources (services), such as a network connection, virtual machines
+   and storage spaces, via the NSICS protocol.  It provides
+   experimenters a virtual infrastructure, which spans several cloud
+   resources, realised by multiple management domains including
+   commercial solutions.  GridARS consists of three main components.
+
+8.  IANA Considerations
+
+   No IANA considerations are applicable.
+
+9.  Security Considerations
+
+   This document proposes a new architecture for resource and VNF
+   orchestration for the design of which security features are of utmost
+   importance to proceed to operational deployments.  Frameworks for
+   Security in SDN are applicable to this document and are discussed in
+   literature, for example, in [SDNSecurity], [SDNSecServ] and
+   [SDNSecOF].  Security considerations regarding specific protocol
+   interfaces are TBD.
+
+10.  Acknowledgements
+
+   This work has been partially supported and funded by the European
+   Commission through the FP7 UNIFY (grant agreement no. 619609), FP7
+   ICT FELIX (grant agreement no. 608638) and the National Institute of
+   Information and Communications Technology (NICT) in Japan.  Views
+   expressed here are those of the author only.  The European Commission
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 26]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   and NICT are not liable for any use that may be made of the
+   information in this document.
+
+11.  Contributors
+
+   Authors would like to acknowledge (in alphabetical order) the
+   following contributors from the FELIX and UNIFY projects who have
+   provided text, pointers, and ideas for this document:
+
+   o  Bartosz Belter (PSNC, Poland)
+
+   o  Carlos Bermudo (i2CAT, Spain)
+
+   o  Andras Csaszar (Ericsson Research, Hungary)
+
+   o  Mario Kind (Deutsche Telekom AG)
+
+   o  Diego Daino (Telecom Italia, Italy)
+
+   o  Tomohiro Kudoh (Univ.  Tokyo/AIST, Japan)
+
+   o  Zu Qiang (Ericsson, Cananda)
+
+   o  Jin Tanaka (KDDI, Japan)
+
+   o  Brecht Vermeulen (iMinds, Belgium)
+
+   o  Hagen Woesner (BISDN, Germany)
+
+   Authors would like to thank Fritz-Joachim Westphal and Catalin
+   Meirosu for their comments and suggestions on how to refine initial
+   versions of this draft
+
+12.  Informative References
+
+   [ANSIBLE]  Ansible Inc., "Ansible Documentation", 2015,
+              <http://docs.ansible.com/index.html>.
+
+   [CHEF]     Chef Software Inc., "An Overview of Chef", 2015,
+              <https://docs.chef.io/chef_overview.html>.
+
+   [cloudstack]
+              "Apache CloudStack documentation. Cloud Infrastructure
+              Concepts", Available online at
+              http://cloudstack.apache.org/docs/en-
+              US/Apache_CloudStack/4.1.0/html/Admin_Guide/
+              cloud-infrastructure-concepts.html.
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 27]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   [ETSI-NFV-Arch]
+              ETSI, "Architectural Framework v1.1.1", Oct 2013,
+              <http://www.etsi.org/deliver/etsi_gs/
+              NFV/001_099/002/01.01.01_60/gs_NFV002v010101p.pdf>.
+
+   [ETSI-NFV-MANO]
+              ETSI, "Network Function Virtualization (NFV) Management
+              and Orchestration V0.6.1 (draft)", Jul. 2014,
+              <http://docbox.etsi.org/ISG/NFV/Open/Latest_Drafts/
+              NFV-MAN001v061-%20management%20and%20orchestration.pdf>.
+
+   [EU-5GPPP-Contract]
+              5G-PPP Association, "Contractual Arrangement: Setting up a
+              Public- Private Partnership in the Area of Advance 5G
+              Network Infrastructure for the Future Internet between the
+              European Union and the 5G Infrastructure Association", Dec
+              2013, <http://5g-ppp.eu/contract/>.
+
+   [FELIX]    "FELIX Project website",  http://www.ict-felix.eu.
+
+   [FELIX-D2.1]
+              R. Krzywania, W. Bogacki, B. Belter, K. Pentikousis, T.
+              Rothe, G. Carrozzo, N. Ciulli, C. Bermudo, T. Kudoh, A.
+              Takefusa, J. Tanaka and B. Puype, , "FELIX Deliverable
+              D2.1 - Experiment Use Cases and Requirements",  Available
+              online at http://www.ict-felix.eu., September 2013.
+
+   [FELIX-D2.2]
+              R. Krzywania, W. Bogacki, B. Belter, K. Pentikousis, T.
+              Rothe, M. Broadbent, G. Carrozzo, N. Ciulli, R. Monno, C.
+              Bermudo, A. Vico, C. Fernandez, T. Kudoh, A. Takefusa, J.
+              Tanaka and B. Puype, , "FELIX Deliverable D2.2 - General
+              Architecture and Functional Blocks",  Available online at
+              http://www.ict-felix.eu., February 2014.
+
+   [FIBRE]    T. Salmito, L. Ciuffo, I. Machado, M. Salvador, et al, ,
+              "FIBRE - An International Testbed for Future Internet
+              Experimentation", 32th Simposio Brasileiro de Redes de
+              Computadores e Sistemas Distribuidos (SBRC'14) , 2014.
+
+   [GRIDARS]  [15]  A. Takefusa, H. Nakada, T. Kudoh, Y. Tanaka and S.
+              Sekiguchi, , "GridARS: An Advance Reservation-based Grid
+              Co-allocation Framework for Distributed Computing and
+              Network Resources", Lecture Notes, Computer Science of the
+              Job Scheduling Strategies for Parallel Processing
+              (JSSPP) vol.4942, pp. 152-168, April 2008.
+
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 28]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   [I-D.cmzrjp-ippm-twamp-yang]
+              Civil, R., Morton, A., Zheng, L., Rahman, R.,
+              Jethanandani, M., and K. Pentikousis, "Two-Way Active
+              Measurement Protocol (TWAMP) Data Model", draft-cmzrjp-
+              ippm-twamp-yang-01 (work in progress), July 2015.
+
+   [I-D.ietf-sfc-problem-statement]
+              Quinn, P. and T. Nadeau, "Service Function Chaining
+              Problem Statement", draft-ietf-sfc-problem-statement-13
+              (work in progress), February 2015.
+
+   [I-D.unify-nfvrg-devops]
+              Meirosu, C., Manzalini, A., Kim, J., Steinert, R., Sharma,
+              S., Marchetto, G., Papafili, I., Pentikousis, K., and S.
+              Wright, "DevOps for Software-Defined Telecom
+              Infrastructures", draft-unify-nfvrg-devops-02 (work in
+              progress), July 2015.
+
+   [I-D.zu-nfvrg-elasticity-vnf]
+              Qiang, Z. and R. Szabo, "Elasticity VNF", draft-zu-nfvrg-
+              elasticity-vnf-01 (work in progress), March 2015.
+
+   [IAF]      Veitch, P., McGrath, M. J., and Bayon, V., "An
+              Instrumentation and Analytics Framework for Optimal and
+              Robust NFV Deployment", Communications Magazine, vol. 53,
+              no. 2 IEEE, February 2015.
+
+   [middlebox]
+              A. Greenhalgh, F. Huici, M. Hoerdt, P. Papadimitriou, M.
+              Handley, and L. Mathy, , "Flow Processing and the Rise of
+              Commodity Network Hardware", ACM SIGCOMM Computer
+              Communication Review Volume 39 issue 2, April 2009.
+
+   [NSC]      John, W., Pentikousis, K., et al., "Research directions in
+              network service chaining", Proc. SDN for Future Networks
+              and Services (SDN4FNS), Trento, Italy IEEE, November 2013.
+
+   [OFELIA]   M. Sune, L. Bergesio, H. Woesner, T. Rothe, A. Kopsel, et
+              al., , "Design and implementation of the OFELIA FP7
+              facility: The European OpenFlow testbed", The
+              International Journal of Computer and Telecommunications
+              Networking , December 2013.
+
+   [ONF-SDN-ARCH]
+              ONF, "SDN architecture", Jun. 2014,
+              <https://www.opennetworking.org/images/stories/downloads/
+              sdn-resources/technical-reports/
+              TR_SDN_ARCH_1.0_06062014.pdf>.
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 29]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   [openmano]
+              "OpenMANO", Available online
+              at https://github.com/nfvlabs/openmano/wiki.
+
+   [openstack]
+              "Scaling Openstack", Available online at
+              http://docs.openstack.org/openstack-ops/content/
+              scaling.html.
+
+   [os-heat]  "OpenStack Orchestration - Heat", Available online
+              at https://wiki.openstack.org/wiki/Heat.
+
+   [PUPPET]   Puppet Labs., "Puppet 3.7 Reference Manual", 2015,
+              <http://docs.puppetlabs.com/puppet/3.7/reference/>.
+
+   [RFC7426]  Haleplidis, E., Ed., Pentikousis, K., Ed., Denazis, S.,
+              Hadi Salim, J., Meyer, D., and O. Koufopavlou, "Software-
+              Defined Networking (SDN): Layers and Architecture
+              Terminology", RFC 7426, DOI 10.17487/RFC7426, January
+              2015, <http://www.rfc-editor.org/info/rfc7426>.
+
+   [SALT]     SaltStack, "Salt (Documentation)", 2015,
+              <http://docs.saltstack.com/en/latest/contents.html>.
+
+   [SDNSecOF]
+              Kloti, R., Kotronis, V., and P. Smith, , "OpenFlow: A
+              Security Analysis", 21st IEEE International Conference on
+              Network Protocols (ICNP) pp. 1-6, October 2013.
+
+   [SDNSecServ]
+              Scott-Hayward, S., O'Callaghan, G., and S. Sezer, , "SDN
+              Security: A Survey", IEEE SDN for Future Networks and
+              Services (SDN4FNS) pp. 1-7, 2013.
+
+   [SDNSecurity]
+              Kreutz, D., Ramos, F., and P. Verissimo, , "Towards Secure
+              and Dependable Software-Defined Networks", Proceedings of
+              the second ACM SIGCOMM workshop on Hot Topics in Software
+              Defined Networking pp. 55-60, 2013.
+
+   [SFA]      L. Peterson, R. Ricci, A. Falk and J. Chase, , "Slice-
+              based Federation Architecture (SFA) v2.0",  , July 2010.
+
+   [TOSCA]    OASIS Standard, "Topology and Orchestration Specification
+              for Cloud Applications Version 1.0", November 2013,
+              <http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/
+              TOSCA-v1.0-os.html>.
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 30]
+
+Internet-DraftRecursive orchestration Framework Challenges  October 2015
+
+
+   [UNIFY]    "UNIFY Project website",  http://www.fp7-unify.eu.
+
+Authors' Addresses
+
+   Gino Carrozzo (Ed.) (editor)
+   Nextworks
+   via Livornese 1027
+   Pisa  56122
+   Italy
+
+   Email: g.carrozzo@nextworks.it
+   URI:   http://www.nextworks.it/
+
+
+   Robert Szabo
+   Ericsson Research, Hungary
+   Irinyi Jozsef u. 4-20
+   Budapest  1117
+   Hungary
+
+   Email: robert.szabo@ericsson.com
+   URI:   http://www.ericsson.com/
+
+
+   Kostas Pentikousis (Ed.) (editor)
+   EICT
+   Torgauer Strasse 12-15
+   Berlin  10829
+   Germany
+
+   Email: k.pentikousis@eict.de
+   URI:   http://www.www.eict.de
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Carrozzo, et al.         Expires April 12, 2016                [Page 31]
