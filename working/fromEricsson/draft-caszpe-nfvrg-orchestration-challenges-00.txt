@@ -5,10 +5,10 @@
 Internet Research Task Force NFVRG                      G. Carrozzo, Ed.
 Internet-Draft                                                 Nextworks
 Intended status: Informational                             R. Szabo, Ed.
-Expires: May 20, 2016                                           Ericsson
+Expires: April 3, 2016                                          Ericsson
                                                      K. Pentikousis, Ed.
                                                                     EICT
-                                                       November 17, 2015
+                                                            October 2015
 
 
    Network Function Virtualization: Resource Orchestration Challenges
@@ -18,11 +18,11 @@ Abstract
 
    Network function virtualization (NFV) promises improved operations in
    terms of flexibility, efficiency, and manageability, but
-   orchestration, in general, and recursive orchestration, in
+   orchastration, in general, and recursive orchastration, in
    particular, is still an item of ongoing research.  We summarize the
    current state of the art in open-source initiatives in this area and
    present current directions of research and development in terms of
-   orchestration, resource decomposition and federation, policy-based
+   orchestation, resource decomposition and federation, policy-based
    resource management, measurement and analytics, and virtual network
    function (VNF) elasticity.
 
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 20, 2016.
+   This Internet-Draft will expire on April 3, 2016.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 1]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 1]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    (http://trustee.ietf.org/license-info) in effect on the date of
@@ -98,20 +98,20 @@ Table of Contents
    practitioner, and standardization communities that rigid network
    control limits the flexibility and manageability of service creation,
    as discussed in [NSC] and the references therein.  Today operators
-   run IP networks stitched together by a plethora of highly specialized
+   run IP networks stiched together by a plethora of highly specialized
    middleboxes that implement firewall, NAT, DPI, traffic scrubbing, and
    other functionality [middlebox].  In this environment orchestration
    is fragmented, hindering rapid service deployment.  Moreover,
    recursive orchestration for heterogeneous resources is not
    practically employed.  In this memo, we examine orchestration support
-   in current open-source efforts and describe research challenges in
+   in current open-source efforts and decribe research challenges in
    this area.
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 2]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 2]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
 1.1.  Motivation
@@ -161,20 +161,20 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
    orchestrators, Service O denotes service lifecycle management and
    VIM/WIM denote technology specific resource managers.  Further, for
    the interworking interface between the two autonomous domains the
-   resource virtualization is denoted by S (as a slice).  Control over
+   resource virtualization is denoted by [S] (as a slice).  Control over
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 3]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 3]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    the virtualized resource offered by RO 1 to RO 2 is assumed to be
-   exercised also by the API exposed at S.  Assume that the resource
+   exercised also by the API exposed at [S].  Assume that the resource
    virtualization contains both i) networking resources (e.g., topology
    of forwarding elements) and ii) software resources capable of hosting
-   VNFs.  S is interworking interface, which needs standardization for
+   VNFs.  [S] is interworking interface, which needs standardization for
    efficient interworking.
 
 
@@ -206,7 +206,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
                                  Figure 2
 
    As soon as resources become part of multiple administration domains;
-   technology or vendor specific domains or multi-operator setup
+   technology or vendor specific domains or multi-operator setups
    standardized interfaces are key for smooth interworking.  Without
    such interoperability different technologies for data center and
    network operation result in distinct technology domains even within a
@@ -221,9 +221,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 4]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 4]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
 1.2.  Scope
@@ -277,9 +277,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 5]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 5]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
       A set of virtualized network functions and related network and
@@ -318,7 +318,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
       Entity responsible for domain wide global orchestration of network
       services and software resource reservations in terms of network
       functions over the physical or virtual resources the RO owns.  The
-      domain an RO oversees may consist of slices of other domains.
+      domain an RO oversees MAY consists of slices of other domains.
 
    Resource Manager (RM)
       Entity responsible for controlling and managing different types of
@@ -333,9 +333,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 6]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 6]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    NF is a network function, either software-based (VNF) or appliance-
@@ -389,9 +389,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 7]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 7]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
                                         |[Service Graph]
@@ -401,7 +401,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
                                 +--------------------+
                                         |
                                         V
-              ^    +--------+   +--------------------+
+              A    +--------+   +--------------------+
               |    | NF-IB  |   |Resource            |
               |C   |Resource|<->|Orchestrator (RO0)  |
               |O   | Descr. |   |                    |
@@ -413,7 +413,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               |        |RO1|          |RO2|        |RO3|
               V        +---+          +---+        +---+
 
-              ^                       +---+
+              A                       +---+
               |D                   +--|SW3|--+
               |A                   |  +---+  |
               |T       +---+       |         |      +---+
@@ -421,7 +421,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               |     o--|DC1|-----|SW2|-----|SW4|----|DC2|--o
               V        +---+     +---+     +---+    +---+
 
-                   [-  SP1  -][-       SP2      -][-  SP3  -]
+                   [-  SP1  -][-       SP2      -][-  SP3   -
 
 
     Figure 3: Resource Orchestrator: network function information base
@@ -445,16 +445,16 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 8]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 8]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    this figure we mark clearly that the interfaces to the compute (DC)
    control plane and the SDN (SW) control plane are distinct and
    implemented through different interfaces/APIs.  For example, Ic1
    could be the Apache CloudStack API, while Ic2 could be a control
-   plane protocol such as ForCES or OpenFlow [RFC7426].  In this case,
+   plane protocol such as ForCES or OpenFlow [RFC7426].  In thiscase,
    the orchestrator at SP0 (top part of the figure) needs to maintain a
    tight coordination across this range of interfaces.
 
@@ -501,9 +501,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                  [Page 9]
+Carrozzo, et al.          Expires April 3, 2016                 [Page 9]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    connectivity between L1/L2 network domains at the two ends.  This
@@ -551,15 +551,15 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 3.1.  OpenStack
 
    Among cloud orchestration solutions, OpenStack is the de facto common
-   reference through its Heat module [os-heat].  OpenStack Heat
+   reference through its Heat module [os-heat].  Openstack Heat
    implements an orchestration engine to launch multiple composite cloud
    applications based on templates in the form of text files that can be
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 10]
+Carrozzo, et al.          Expires April 3, 2016                [Page 10]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    treated like code.  Many existing CloudFormation templates can be
@@ -568,10 +568,10 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
    A Heat template describes the infrastructure for a cloud application
    in a text file.  Infrastructure resources that can be described
-   include: servers, floating IPs, volumes, security groups, users, etc.
+   include: servers, floating ips, volumes, security groups, users, etc.
    Templates can also specify the relationships between resources (e.g.
    this volume is connected to this server).  Heat also provides an
-   auto-scaling service.
+   autoscaling service.
 
    Heat primarily manages cloud infrastructure, does not support
    federation and AAA is bundled in the OpenStack framework.
@@ -613,9 +613,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 11]
+Carrozzo, et al.          Expires April 3, 2016                [Page 11]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
 3.4.  Federated Experimentation Infrastructures
@@ -669,9 +669,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 12]
+Carrozzo, et al.          Expires April 3, 2016                [Page 12]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    process frames in, e.g., an OpenFlow TableFeatures reply.  Compute
@@ -725,9 +725,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 13]
+Carrozzo, et al.          Expires April 3, 2016                [Page 13]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    VNF instance.  Network and cloud resources need mutual
@@ -781,9 +781,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 14]
+Carrozzo, et al.          Expires April 3, 2016                [Page 14]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    Third, non-technical considerations which relate to business aspects
@@ -810,11 +810,11 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
    This work has been partially supported and funded by the European
    Commission through the FP7 UNIFY (grant agreement no. 619609), FP7
-   ICT FELIX (grant agreement no. 608638) projects and the National
-   Institute of Information and Communications Technology (NICT) in
-   Japan.  The views expressed here are those of the authors only.  The
-   European Commission and NICT are not liable for any use that may be
-   made of the information in this document.
+   ICT FELIX (grant agreement no. 608638) and the National Institute of
+   Information and Communications Technology (NICT) in Japan.  The views
+   expressed here are those of the authors only.  The European
+   Commission and NICT are not liable for any use that may be made of
+   the information in this document.
 
 8.  Contributors
 
@@ -837,9 +837,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 15]
+Carrozzo, et al.          Expires April 3, 2016                [Page 15]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    [cloudstack]
@@ -864,7 +864,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               R. Krzywania, W. Bogacki, B. Belter, K. Pentikousis, T.
               Rothe, G. Carrozzo, N. Ciulli, C. Bermudo, T. Kudoh, A.
               Takefusa, J. Tanaka and B. Puype, , "FELIX Deliverable
-              D2.1 - Experiment Use Cases and Requirements",  Available
+              D2.1 - Experiment Use Cases and Requirements", Available
               online at http://www.ict-felix.eu., September 2013.
 
    [FELIX-D2.2]
@@ -872,7 +872,7 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               Rothe, M. Broadbent, G. Carrozzo, N. Ciulli, R. Monno, C.
               Bermudo, A. Vico, C. Fernandez, T. Kudoh, A. Takefusa, J.
               Tanaka and B. Puype, , "FELIX Deliverable D2.2 - General
-              Architecture and Functional Blocks",  Available online at
+              Architecture and Functional Blocks", Available online at
               http://www.ict-felix.eu., February 2014.
 
    [I-D.cmzrjp-ippm-twamp-yang]
@@ -893,9 +893,9 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 16]
+Carrozzo, et al.          Expires April 3, 2016                [Page 16]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    [I-D.unify-nfvrg-challenges]
@@ -942,16 +942,16 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               TR_SDN_ARCH_1.0_06062014.pdf>.
 
    [openmano]
-              "OpenMANO", Available online
-              at https://github.com/nfvlabs/openmano/wiki.
+              "OpenMANO", Available online at
+              https://github.com/nfvlabs/openmano/wiki.
 
 
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 17]
+Carrozzo, et al.          Expires April 3, 2016                [Page 17]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    [openstack]
@@ -959,8 +959,8 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               http://docs.openstack.org/openstack-ops/content/
               scaling.html.
 
-   [os-heat]  "OpenStack Orchestration - Heat", Available online
-              at https://wiki.openstack.org/wiki/Heat.
+   [os-heat]  "OpenStack Orchestration - Heat", Available online at
+              https://wiki.openstack.org/wiki/Heat.
 
    [PUPPET]   Puppet Labs., "Puppet 3.7 Reference Manual", 2015,
               <http://docs.puppetlabs.com/puppet/3.7/reference/>.
@@ -972,15 +972,15 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
               2015, <http://www.rfc-editor.org/info/rfc7426>.
 
    [RFC7498]  Quinn, P., Ed. and T. Nadeau, Ed., "Problem Statement for
-              Service Function Chaining", RFC 7498,
-              DOI 10.17487/RFC7498, April 2015,
+              Service Function Chaining", RFC 7498, DOI 10.17487/
+              RFC7498, April 2015,
               <http://www.rfc-editor.org/info/rfc7498>.
 
    [SALT]     SaltStack, "Salt (Documentation)", 2015,
               <http://docs.saltstack.com/en/latest/contents.html>.
 
    [SFA]      L. Peterson, R. Ricci, A. Falk and J. Chase, , "Slice-
-              based Federation Architecture (SFA) v2.0",  , July 2010.
+              based Federation Architecture (SFA) v2.0", , July 2010.
 
    [TOSCA]    OASIS Standard, "Topology and Orchestration Specification
               for Cloud Applications Version 1.0", November 2013,
@@ -1005,9 +1005,9 @@ Authors' Addresses
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 18]
+Carrozzo, et al.          Expires April 3, 2016                [Page 18]
 
-Internet-Draft    NFV Resource Orchestration Challenges    November 2015
+Internet-Draft    NFV Resource Orchestration Challenges     October 2015
 
 
    Robert Szabo (editor)
@@ -1061,4 +1061,4 @@ Internet-Draft    NFV Resource Orchestration Challenges    November 2015
 
 
 
-Carrozzo, et al.          Expires May 20, 2016                 [Page 19]
+Carrozzo, et al.          Expires April 3, 2016                [Page 19]

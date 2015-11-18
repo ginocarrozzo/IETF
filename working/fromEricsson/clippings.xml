@@ -1,0 +1,24 @@
+From Intro:
+
+<t>We are also interested in a multi-operation environment, where the
+  roles and responsibilities are distributed according to some
+  organizational structure within the organization. Finally, we are
+  interested in multi-provider environment, where different
+  infrastructure resources are available from different service
+  providers (SPs). We expect that this type of deployments will become
+  more common in the future as they are well suited with the
+  elasticity and flexibility requirements <xref target="NSC" />.</t>
+
+
+From Scope:
+</t>  which can, in
+  general, a) be programed in a recursive manner, b) be shared based
+  on policies, and c) reside across different administrative
+  domains. This can allow defining larger virtual overlays where
+  different resources and functions are deployed, combined, and
+  handled in the form of virtual instances irrespective of the
+  administrative domain and specific technology from which they
+  originate.</t>
+
+
+From terminology:
